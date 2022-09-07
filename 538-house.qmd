@@ -90,6 +90,7 @@ districts |>
     x, y, state, district, condition
   ) -> deniers
 ```
+
 ```{r evil-house-gop-map}
 ggplot() +
   geom_polygon(
