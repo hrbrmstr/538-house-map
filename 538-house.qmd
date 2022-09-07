@@ -23,15 +23,13 @@ library(ggplot2)
 library(dplyr)
 ```
 
-```{r}
-#| warning: false
-#| message: false
+```{r house-files}
 districts <- read_csv_arrow("districts.csv")
 districts_base_layer <- read_csv_arrow("districts-base-layer.csv")
 state_labels <- read_csv_arrow("state-labels.csv")
 ```
 
-```{r vanilla}
+```{r vanilla-carto}
 ggplot() +
   geom_polygon(
     data = districts_base_layer,
@@ -67,26 +65,32 @@ ggplot() +
   )
 ```
 
-```{r evil-gop}
+```{r evil-house-gop-data}
 candidates  <- jsonlite::fromJSON("2022-09-07-candidates.json")
 
-candidates$candidates |> 
-  filter(
-    office == "Representative"
+districts |> 
+  left_join(
+    candidates$candidates |> 
+      filter(
+        office == "Representative"
+    ) |> 
+    mutate(
+      district = sprintf("%s-%s", abbr, district)
+    ) |> 
+    select(district, stance)
   ) |> 
   mutate(
-    district = sprintf("%s-%s", abbr, district),
     condition = case_when(
-      abbr %in% candidates$futureStates ~ "Primary Not Completed",
+      state %in% candidates$futureStates ~ "Primary Not Completed",
       stance %in% c("Yes", "Declined to answer") ~ "Denier On Ballot",
       TRUE ~ NA_character_ 
     )
   ) |> 
   distinct(
-    district, condition
+    x, y, state, district, condition
   ) -> deniers
 ```
-```{r evil-map}
+```{r evil-house-gop-map}
 ggplot() +
   geom_polygon(
     data = districts_base_layer,
@@ -95,7 +99,7 @@ ggplot() +
     color = "black"
   ) +
   geom_polygon(
-    data = districts |> left_join(deniers),
+    data = deniers,
     aes(x, -y, group = district, fill = condition),
     color = "white",
     size = 0.25,
@@ -128,7 +132,7 @@ ggplot() +
     )
   ) +
   coord_equal() +
-  hrbrthemes::theme_ipsum_rc(grid = "") +
+  theme_ipsum_rc(grid = "") +
   theme(
     axis.title.x.bottom = element_blank(),
     axis.title.y.left = element_blank(),
