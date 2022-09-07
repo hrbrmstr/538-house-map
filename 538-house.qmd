@@ -56,7 +56,10 @@ ggplot() +
     fill = alpha("white", 3 / 4)
   ) +
   coord_equal() +
-  hrbrthemes::theme_ipsum_rc(grid = "") +
+  labs(
+    title = "U.S. House/District Cartogram (developed by 538)"
+  ) +
+  theme_ipsum_rc(grid = "") +
   theme(
     axis.title.x.bottom = element_blank(),
     axis.title.y.left = element_blank(),
@@ -133,6 +136,9 @@ ggplot() +
     )
   ) +
   coord_equal() +
+  labs(
+    title = "2022 U.S. House Races With 2020 Election Deniers On The Ballot"
+  ) +
   theme_ipsum_rc(grid = "") +
   theme(
     axis.title.x.bottom = element_blank(),
