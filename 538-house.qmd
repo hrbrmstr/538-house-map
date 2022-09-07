@@ -9,7 +9,7 @@ Ref: <https://projects.fivethirtyeight.com/republicans-trump-election-fraud/>
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   dev = 'svg',
-  fig.width = 13,
+  fig.width = 10,
   fig.height = 9,
   warning = FALSE,
   message = FALSE
