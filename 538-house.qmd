@@ -1,0 +1,132 @@
+---
+title: "538 House Map"
+code-tools: true
+standalone: true
+---
+
+Ref: <https://projects.fivethirtyeight.com/republicans-trump-election-fraud/>
+
+```{r}
+#| warning: false
+#| message: false
+library(arrow)
+library(hrbrthemes)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+districts <- read_csv_arrow("districts.csv")
+districts_base_layer <- read_csv_arrow("districts-base-layer.csv")
+state_labels <- read_csv_arrow("state-labels.csv")
+```
+
+```{r}
+#| fig.width: 13
+#| fig.height: 9
+ggplot() +
+  geom_polygon(
+    data = districts_base_layer,
+    aes(x, y, group = state),
+    fill = "white",
+    color = "black"
+  ) +
+  geom_polygon(
+    data = districts,
+    aes(x, -y, group = district),
+    fill = "black",
+    color = "white",
+    size = 0.125
+  ) +
+  geom_label(
+    data = state_labels,
+    aes(x, -y, label = state),
+    size = 3,
+    family = font_rc,
+    hjust = 0.1,
+    vjust = 0.1,
+    label.size = 0,
+    label.padding = unit(1, "pt"),
+    fill = alpha("white", 3 / 4)
+  ) +
+  coord_equal() +
+  hrbrthemes::theme_ipsum_rc(grid = "") +
+  theme(
+    axis.title.x.bottom = element_blank(),
+    axis.title.y.left = element_blank(),
+    axis.text.x.bottom = element_blank(),
+    axis.text.y.left = element_blank()
+  )
+```
+
+```{r}
+candidates  <- jsonlite::fromJSON("2022-09-07-candidates.json")
+
+candidates$candidates |> 
+  filter(
+    office == "Representative"
+  ) |> 
+  mutate(
+    district = sprintf("%s-%s", abbr, district),
+    condition = case_when(
+      state %in% candidates$futureStates ~ "Primary Not Completed",
+      stance %in% c("Yes", "Declined to answer") ~ "Denier On Ballot",
+      TRUE ~ NA_character_ 
+    )
+  ) |> 
+  distinct(
+    district, condition
+  ) -> deniers
+
+ggplot() +
+  geom_polygon(
+    data = districts_base_layer,
+    aes(x, y, group = state),
+    fill = "white",
+    color = "black"
+  ) +
+  geom_polygon(
+    data = districts |> left_join(deniers),
+    aes(x, -y, group = district, fill = condition),
+    color = "white",
+    size = 0.25,
+    key_glyph = "point"
+  ) +
+  geom_label(
+    data = state_labels,
+    aes(x, -y, label = state),
+    size = 3,
+    family = font_rc,
+    hjust = 0.1,
+    vjust = 0.1,
+    label.size = 0,
+    label.padding = unit(1, "pt"),
+    fill = alpha("white", 3 / 4)
+  ) +
+  scale_fill_manual(
+    name = NULL,
+    values = c(
+      "Denier On Ballot" = "#980b65",
+      "Primary Not Completed" = "white"
+    ),
+    na.value = "#d3d3d3"
+  ) +
+  guides(
+    fill = guide_legend(
+      override.aes = list(
+        shape = 21, color = "black", size = 5
+      )
+    )
+  ) +
+  coord_equal() +
+  hrbrthemes::theme_ipsum_rc(grid = "") +
+  theme(
+    axis.title.x.bottom = element_blank(),
+    axis.title.y.left = element_blank(),
+    axis.text.x.bottom = element_blank(),
+    axis.text.y.left = element_blank()
+  ) +
+  theme(
+    legend.position = "top"
+  )
+```
