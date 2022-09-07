@@ -6,9 +6,17 @@ standalone: true
 
 Ref: <https://projects.fivethirtyeight.com/republicans-trump-election-fraud/>
 
-```{r}
-#| warning: false
-#| message: false
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  dev = 'svg',
+  fig.width = 13,
+  fig.height = 9,
+  warning = FALSE,
+  message = FALSE
+) 
+```
+
+```{r libs}
 library(arrow)
 library(hrbrthemes)
 library(ggplot2)
@@ -23,11 +31,7 @@ districts_base_layer <- read_csv_arrow("districts-base-layer.csv")
 state_labels <- read_csv_arrow("state-labels.csv")
 ```
 
-```{r}
-#| warning: false
-#| message: false
-#| fig.width: 13
-#| fig.height: 9
+```{r vanilla}
 ggplot() +
   geom_polygon(
     data = districts_base_layer,
@@ -63,9 +67,7 @@ ggplot() +
   )
 ```
 
-```{r}
-#| warning: false
-#| message: false
+```{r evil-gop}
 candidates  <- jsonlite::fromJSON("2022-09-07-candidates.json")
 
 candidates$candidates |> 
@@ -75,7 +77,7 @@ candidates$candidates |>
   mutate(
     district = sprintf("%s-%s", abbr, district),
     condition = case_when(
-      state %in% candidates$futureStates ~ "Primary Not Completed",
+      abbr %in% candidates$futureStates ~ "Primary Not Completed",
       stance %in% c("Yes", "Declined to answer") ~ "Denier On Ballot",
       TRUE ~ NA_character_ 
     )
@@ -84,11 +86,7 @@ candidates$candidates |>
     district, condition
   ) -> deniers
 ```
-```{r}
-#| warning: false
-#| message: false
-#| fig.width: 13
-#| fig.height: 9
+```{r evil-map}
 ggplot() +
   geom_polygon(
     data = districts_base_layer,

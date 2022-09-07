@@ -2,4 +2,5 @@ project:
   output-dir: docs
 
 format:
-  html
+  html:
+    default-image-extension: svg
