@@ -16,12 +16,16 @@ library(dplyr)
 ```
 
 ```{r}
+#| warning: false
+#| message: false
 districts <- read_csv_arrow("districts.csv")
 districts_base_layer <- read_csv_arrow("districts-base-layer.csv")
 state_labels <- read_csv_arrow("state-labels.csv")
 ```
 
 ```{r}
+#| warning: false
+#| message: false
 #| fig.width: 13
 #| fig.height: 9
 ggplot() +
@@ -60,6 +64,8 @@ ggplot() +
 ```
 
 ```{r}
+#| warning: false
+#| message: false
 candidates  <- jsonlite::fromJSON("2022-09-07-candidates.json")
 
 candidates$candidates |> 
@@ -77,7 +83,12 @@ candidates$candidates |>
   distinct(
     district, condition
   ) -> deniers
-
+```
+```{r}
+#| warning: false
+#| message: false
+#| fig.width: 13
+#| fig.height: 9
 ggplot() +
   geom_polygon(
     data = districts_base_layer,
